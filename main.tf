@@ -4,6 +4,12 @@
 * This module creates an OS Login-enabled VM instance that can be used as a
 * remote environment for VSCode.
 *
+* In order to use this VM instance as a remote environment, run the following commands:
+* ```
+* terraform show -json | jq -r '.values.root_module.resources[] | select(.address=="tls_private_key.dev") | .values.public_key_openssh' > ~/.ssh/remote_dev.pub
+* terraform show -json | jq -r '.values.root_module.resources[] | select(.address=="tls_private_key.dev") | .values.private_key_pem' > ~/.ssh/remote_dev
+* terraform output -raw ssh_config >> ~/.ssh/config
+*
 */
 
 terraform {
@@ -153,7 +159,7 @@ Host remote-dev
   IdentitiesOnly yes
   StrictHostKeyChecking no
   UserKnownHostsFile ~/.ssh/remote_dev_known_hosts
-  ProxyCommand /usr/bin/python3 -S /home/josh/google-cloud-sdk/lib/gcloud.py compute start-iap-tunnel remote-dev %p --listen-on-stdin --project=${var.project_id} --zone=${local.zone} --verbosity=warning
+  ProxyCommand /usr/bin/python3 -S ~/google-cloud-sdk/lib/gcloud.py compute start-iap-tunnel remote-dev %p --listen-on-stdin --project=${var.project_id} --zone=${local.zone} --verbosity=warning
   ProxyUseFdpass no
 EOF
 }

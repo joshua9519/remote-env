@@ -1,7 +1,15 @@
+<!-- BEGIN_TF_DOCS -->
 # Remote developement environment
 
 This module creates an OS Login-enabled VM instance that can be used as a
 remote environment for VSCode.
+
+In order to use this VM instance as a remote environment, run the following commands:
+```
+terraform show -json | jq -r '.values.root_module.resources[] | select(.address=="tls_private_key.dev") | .values.public_key_openssh' > ~/.ssh/remote_dev.pub
+terraform show -json | jq -r '.values.root_module.resources[] | select(.address=="tls_private_key.dev") | .values.private_key_pem' > ~/.ssh/remote_dev
+terraform output -raw ssh_config >> ~/.ssh/config
+```
 
 ## Requirements
 
@@ -42,6 +50,7 @@ remote environment for VSCode.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_git_name"></a> [git\_name](#input\_git\_name) | (Required) The name used for Git config | `string` | n/a | yes |
 | <a name="input_project_id"></a> [project\_id](#input\_project\_id) | (Required) The project ID to deploy to. | `string` | n/a | yes |
 | <a name="input_region"></a> [region](#input\_region) | (Optional. Defaults to europe-west2) The region to deploy to. | `string` | `"europe-west2"` | no |
 
@@ -50,3 +59,4 @@ remote environment for VSCode.
 | Name | Description |
 |------|-------------|
 | <a name="output_ssh_config"></a> [ssh\_config](#output\_ssh\_config) | n/a |
+<!-- END_TF_DOCS -->
