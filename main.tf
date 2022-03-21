@@ -73,9 +73,10 @@ module "cloud-nat" {
 }
 
 resource "google_compute_instance" "vm" {
-  name         = "remote-dev"
-  machine_type = "e2-small"
-  zone         = local.zone
+  name                      = "remote-dev"
+  machine_type              = "e2-medium"
+  zone                      = local.zone
+  allow_stopping_for_update = true
 
   boot_disk {
     initialize_params {
