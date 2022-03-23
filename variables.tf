@@ -11,3 +11,7 @@ variable "git_name" {
   description = "(Required) The name used for Git config"
   type        = string
 }
+variable "service_account" {
+  description = "The project factory service account to run the VM as."
+  type        = string
+}

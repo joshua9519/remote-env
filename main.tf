@@ -14,7 +14,7 @@
 
 terraform {
   backend "gcs" {
-    bucket = "argocd-demo-pf-1-tfstate"
+    bucket = "josh-hill-pf-1-tfstate"
     prefix = "remote-env"
   }
 
@@ -22,10 +22,6 @@ terraform {
     google = {
       source  = "hashicorp/google"
       version = "4.14.0"
-    }
-    github = {
-      source  = "integrations/github"
-      version = "~> 4.0"
     }
     tls = {
       source  = "hashicorp/tls"
@@ -43,11 +39,6 @@ locals {
 }
 
 data "google_client_openid_userinfo" "me" {}
-
-resource "google_service_account" "default" {
-  account_id   = "vscode"
-  display_name = "VSCode Service Account"
-}
 
 resource "google_compute_network" "default" {
   name                    = "remote-dev"
@@ -72,9 +63,16 @@ module "cloud-nat" {
   network       = google_compute_network.default.id
 }
 
+resource "google_compute_disk" "default" {
+  name = "docker-data"
+  type = "pd-ssd"
+  zone = local.zone
+  size = 50
+}
+
 resource "google_compute_instance" "vm" {
   name                      = "remote-dev"
-  machine_type              = "e2-medium"
+  machine_type              = "e2-standard-2"
   zone                      = local.zone
   allow_stopping_for_update = true
 
@@ -84,6 +82,11 @@ resource "google_compute_instance" "vm" {
     }
   }
 
+  attached_disk {
+    source      = google_compute_disk.default.id
+    device_name = "docker"
+  }
+
   network_interface {
     subnetwork = google_compute_subnetwork.default.self_link
   }
@@ -91,6 +94,12 @@ resource "google_compute_instance" "vm" {
   tags = ["remote-dev"]
 
   metadata_startup_script = <<EOF
+mkfs.ext4 -m 0 -E lazy_itable_init=0,lazy_journal_init=0,discard /dev/sdb
+mkdir -p /var/lib/docker
+mount -o discard,defaults /dev/sdb /var/lib/docker
+uuid=$(blkid -s UUID -o value /dev/sdb)
+echo "UUID=$uuid /var/lib/docker ext4 discard,defaults,nofail 0 2" >> /etc/fstab
+ 
 apt update
 apt install -y ca-certificates curl gnupg lsb-release
 curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
@@ -111,7 +120,7 @@ EOF
   }
 
   service_account {
-    email = google_service_account.default.email
+    email = var.service_account
     scopes = [
       "https://www.googleapis.com/auth/cloud-platform",
     ]

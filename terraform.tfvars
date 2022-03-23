@@ -1,2 +1,3 @@
-project_id = "remote-dev-340911"
-git_name   = "Josh Hill"
+project_id      = "josh-hill-pf-1"
+git_name        = "Josh Hill"
+service_account = "project-factory@josh-hill-pf-1.iam.gserviceaccount.com"
