@@ -123,6 +123,7 @@ EOF
     email = var.service_account
     scopes = [
       "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/userinfo.email"
     ]
   }
 }
