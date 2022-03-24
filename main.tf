@@ -111,6 +111,8 @@ apt install -y docker-ce docker-ce-cli containerd.io
 
 git config --global user.email "${data.google_client_openid_userinfo.me.email}"
 git config --global user.name "${var.git_name}"
+
+sysctl -w fs.inotify.max_user_watches=524288
 EOF
 
   metadata = {
