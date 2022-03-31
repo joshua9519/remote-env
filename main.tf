@@ -99,6 +99,10 @@ EOF
   }
 
   resource_policies = [google_compute_resource_policy.vm.self_link]
+
+  depends_on = [
+    google_project_iam_member.vm
+  ]
 }
 
 resource "google_compute_resource_policy" "vm" {
@@ -116,12 +120,11 @@ resource "google_compute_resource_policy" "vm" {
   }
 }
 
-resource "google_compute_instance_iam_member" "vm" {
-  for_each      = local.vm_iam
-  instance_name = google_compute_instance.vm.name
-  zone          = local.zone
-  role          = "roles/${each.value.role}"
-  member        = each.value.member
+resource "google_project_iam_member" "vm" {
+  for_each = local.vm_iam
+  project  = var.project_id
+  role     = "roles/${each.value.role}"
+  member   = each.value.member
 }
 
 resource "tls_private_key" "dev" {
